@@ -1,25 +1,34 @@
-// npm init
-var oneLinerJoke = require("one-liner-joke");
-/*The variable getRandomJoke will contain a random joke with a format:
-{"body":"Artificial intelligence is no match for natural stupidity.","tags":["intelligence","stupid"]}*/
-var getRandomJoke = oneLinerJoke.getRandomJoke();
-console.log(getRandomJoke);
-const x = getRandomJoke.body;
+// npm init -y
+// npm install --save @solana/web3.js
+const {
+  Connection,
+  LAMPORTS_PER_SOL,
+  clusterApiUrl,
+  Keypair,
+} = require("@solana/web3.js");
 
+const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
 
-const cowsay = require("cowsay");
-console.log(
-  cowsay.say({
-    text: x,
-    e: "ee",
-    T: "",
-  })
-);
+(async () => {
+  const keypair = Keypair.generate();
 
+  const airdropSignature = await connection.requestAirdrop(
+    keypair.publicKey,
+    LAMPORTS_PER_SOL
+  );
 
-const y = {
-  Name: "Soham",
-  Organisation: "BITS",
-  food_likes: ["Paneer", 79, "true", "a"],
-};
-console.log(y.food_likes[1]);
+  const latestBlockHash = await connection.getLatestBlockhash();
+
+  const txn = await connection.confirmTransaction({
+    blockhash: latestBlockHash.blockhash,
+    lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+    signature: airdropSignature,
+  });
+
+  console.log({
+    publicKey: keypair.publicKey,
+    privateKey: keypair.secretKey,
+    signature: airdropSignature,
+    txn,
+  });
+})();
